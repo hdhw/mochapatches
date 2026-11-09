@@ -1,0 +1,115 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <AssemblyName>MochaPatches</AssemblyName>
+    <RootNamespace>MochaPatches</RootNamespace>
+    <LangVersion>latest</LangVersion>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+
+    <!-- Keep in step with Core.ModVersion and the [MelonInfo] version in Core.cs. -->
+    <Version>1.0.8</Version>
+    <AssemblyVersion>1.0.8.0</AssemblyVersion>
+    <FileVersion>1.0.8.0</FileVersion>
+
+    <!-- MochaGuard's watchdogs P/Invoke into 64-bit-only Win32 surface and the game
+         process is x64, so the merged assembly is pinned to x64 as MochaGuard was. -->
+    <PlatformTarget>x64</PlatformTarget>
+
+    <GameDir>gamedir/gamedir</GameDir>
+    <MelonDir>$(GameDir)\MelonLoader</MelonDir>
+    <Il2CppAsmDir>$(MelonDir)\Il2CppAssemblies</Il2CppAsmDir>
+    <Net6Dir>$(MelonDir)\net6</Net6Dir>
+
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="MelonLoader">
+      <HintPath>$(Net6Dir)\MelonLoader.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="0Harmony">
+      <HintPath>$(Net6Dir)\0Harmony.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="Il2CppInterop.Runtime">
+      <HintPath>$(Net6Dir)\Il2CppInterop.Runtime.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="Il2CppInterop.Common">
+      <HintPath>$(Net6Dir)\Il2CppInterop.Common.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+
+    <Reference Include="Il2Cppmscorlib">
+      <HintPath>$(Il2CppAsmDir)\Il2Cppmscorlib.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="Il2CppSystem">
+      <HintPath>$(Il2CppAsmDir)\Il2CppSystem.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="Il2CppSystem.Core">
+      <HintPath>$(Il2CppAsmDir)\Il2CppSystem.Core.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+
+    <Reference Include="Il2CppRecNet.Runtime">
+      <HintPath>$(Il2CppAsmDir)\Il2CppRecNet.Runtime.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+
+    <Reference Include="Il2CppPhotonRealtime">
+      <HintPath>$(Il2CppAsmDir)\Il2CppPhotonRealtime.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="Il2CppPhoton3Unity3D">
+      <HintPath>$(Il2CppAsmDir)\Il2CppPhoton3Unity3D.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="Il2CppPhotonUnityNetworking">
+      <HintPath>$(Il2CppAsmDir)\Il2CppPhotonUnityNetworking.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+
+    <Reference Include="Il2CppRecRoom.Rranticheat.Runtime">
+      <HintPath>$(Il2CppAsmDir)\Il2CppRecRoom.Rranticheat.Runtime.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+
+    <Reference Include="Il2CppRecRoom.Networking.PhotonImpl.Runtime">
+      <HintPath>$(Il2CppAsmDir)\Il2CppRecRoom.Networking.PhotonImpl.Runtime.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+
+    <Reference Include="Assembly-CSharp">
+      <HintPath>$(Il2CppAsmDir)\Assembly-CSharp.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+
+    <Reference Include="UnityEngine.CoreModule">
+      <HintPath>$(Il2CppAsmDir)\UnityEngine.CoreModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+
+    <Reference Include="Il2CppRecRoom.Datastructures.Singletons.Runtime">
+      <HintPath>$(Il2CppAsmDir)\Il2CppRecRoom.Datastructures.Singletons.Runtime.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+  <Target Name="CopyToMods" AfterTargets="Build">
+    <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(GameDir)\Mods\" SkipUnchangedFiles="false" />
+  </Target>
+
+  <Target Name="Obfuscate" DependsOnTargets="Build">
+    <Error Condition="'$(Configuration)' != 'Release'"
+           Text="Obfuscate must run in Release: dotnet build -c Release -t:Obfuscate" />
+    <Exec Command="obfuscar.console Obfuscar.xml" WorkingDirectory="$(MSBuildProjectDirectory)" />
+    <MakeDir Directories="$(MSBuildProjectDirectory)\dist" />
+    <Copy SourceFiles="$(MSBuildProjectDirectory)\bin\Obfuscated\MochaPatches.dll" DestinationFolder="$(MSBuildProjectDirectory)\dist\" />
+  </Target>
+
+</Project>

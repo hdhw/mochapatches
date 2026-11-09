@@ -1,0 +1,55 @@
+<?xml version="1.0"?>
+<Obfuscator>
+  <Var name="InPath" value=".\bin\Release\net6.0" />
+  <Var name="OutPath" value=".\bin\Obfuscated" />
+  <Var name="Platform" value="dotnet" />
+
+  <!-- Portable: resolve the referenced game/MelonLoader assemblies from the same
+       gamedir tree MochaPatches.csproj builds against, instead of a hardcoded
+       per-machine path. Keep in step with <GameDir> in the csproj. -->
+  <AssemblySearchPath path=".\gamedir\gamedir\MelonLoader\net6" />
+  <AssemblySearchPath path=".\gamedir\gamedir\MelonLoader\Il2CppAssemblies" />
+
+  <!-- Aggressive rename: nothing public is spared, so type/namespace/member names
+       all collapse into a garbled mess in the shipped DLL. MelonLoader still finds
+       the mod (it reads the [MelonInfo] typeof token, not the name) and Harmony
+       still finds its patches (by attribute, with the patch method names skipped
+       below), so the renaming is safe despite hiding the public API. -->
+  <Var name="KeepPublicApi" value="false" />
+  <Var name="HidePrivateApi" value="true" />
+
+  <Var name="RenameFields" value="true" />
+  <Var name="RenameProperties" value="true" />
+  <Var name="RenameEvents" value="true" />
+  <Var name="ReuseNames" value="true" />
+
+  <!-- MUST stay false. UseUnicodeNames=true produces identifiers that MelonLoader's
+       assembly loader rejects with BadImageFormatException ("Format of the executable
+       (.exe) or library (.dll) is invalid") under Proton/Wine, confirmed on a live
+       Rec Room 20230406 load. Names still garble to short ASCII (a/b/c), which is
+       still an unreadable mess but a VALID image. Do not turn this back on. -->
+  <Var name="UseUnicodeNames" value="false" />
+  <Var name="UseKoreanNames" value="false" />
+
+  <!-- XOR-hide every string literal in method bodies at build time; Obfuscar injects
+       a decryptor so values are restored at runtime. Attribute strings (Harmony
+       target names, MelonInfo text) live in metadata blobs and are untouched, so
+       patching and mod discovery keep working. -->
+  <Var name="HideStrings" value="true" />
+
+  <Module file=".\bin\Release\net6.0\MochaPatches.dll">
+    <!-- Harmony discovers these by name via reflection; renaming them unhooks every
+         patch, so they must survive. -->
+    <SkipMethod type="*" name="Prefix" />
+    <SkipMethod type="*" name="Postfix" />
+    <SkipMethod type="*" name="Transpiler" />
+    <SkipMethod type="*" name="Finalizer" />
+    <SkipMethod type="*" name="Prepare" />
+    <SkipMethod type="*" name="TargetMethod" />
+    <SkipMethod type="*" name="TargetMethods" />
+
+    <!-- The decoy. Left entirely un-renamed and un-hidden so it stands out in the
+         clear amid the garbage — a red herring that does nothing. See Decoy.cs. -->
+    <SkipNamespace name="ObfuscatedByTopLevelOpsecObf" />
+  </Module>
+</Obfuscator>

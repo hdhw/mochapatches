@@ -1,0 +1,15 @@
+
+bin/
+obj/
+dist/
+
+gamedir/
+
+.vs/
+*.user
+.DS_Store
+
+bin/
+obj/
+node_modules/
+.env
